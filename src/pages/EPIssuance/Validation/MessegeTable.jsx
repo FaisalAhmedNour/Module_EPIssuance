@@ -31,7 +31,15 @@ const MessageTable = () => {
         })
     }
 
+    const getEngineOnSignal = () => {
+        window.engine.onProcessStart(function (message) {
+            console.log("message stop", message);
+            setMessages([]);
+        });
+    }
+
     useEffect(() => {
+        getEngineOnSignal();
         fetchMessage();
         return undefined;
     }, []);

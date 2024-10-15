@@ -1,9 +1,9 @@
 import {
     Tab,
-    Box,
     Tabs,
     Typography,
 } from '@mui/material';
+import Box from "@mui/material/Box"
 import {
     useNavigate,
     useLocation,
@@ -13,6 +13,8 @@ import React, { lazy, Suspense } from 'react';
 import LoaderPage from '../../Components/LoaderPage';
 import Validation from './Validation/Validation';
 import EPIssue from './EPIssue/EPIssue';
+import { EPDataProvider } from '../../providers/EPDataProvider';
+import DataPreparation from './DataPreparation/DataPreparation';
 
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -49,7 +51,7 @@ const EPIssuance = () => {
     React.useEffect(() => {
         const tab = parseInt(location.search.split('=')[1]);
 
-        if (tab >= 0 && tab < 2) {
+        if (tab >= 0 && tab < 3) {
             setValue(tab);
         } else {
             setValue(0);
@@ -62,8 +64,9 @@ const EPIssuance = () => {
         navigate(path + '?Tab=' + newValue);
     };
 
-    return(
-        <Box
+    return (
+        <EPDataProvider>
+            <Box
                 sx={{ width: '100%' }}
             >
                 <Box
@@ -81,8 +84,12 @@ const EPIssuance = () => {
                             {...a11yProps(0)}
                         />
                         <Tab
-                            label="EP Issue"
+                            label="Data Preparation"
                             {...a11yProps(1)}
+                        />
+                        <Tab
+                            label="EP Issue"
+                            {...a11yProps(2)}
                         />
                     </Tabs>
                 </Box>
@@ -96,9 +103,16 @@ const EPIssuance = () => {
                     value={value}
                     index={1}
                 >
+                    <Suspense fallback={<LoaderPage />}><DataPreparation /></Suspense>
+                </CustomTabPanel>
+                <CustomTabPanel
+                    value={value}
+                    index={2}
+                >
                     <Suspense fallback={<LoaderPage />}><EPIssue /></Suspense>
                 </CustomTabPanel>
             </Box>
+        </EPDataProvider>
     )
 }
 

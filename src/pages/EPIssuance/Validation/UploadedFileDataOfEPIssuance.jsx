@@ -82,9 +82,43 @@ const UploadedFileDataOfEPIssuance = ({
         return () => undefined;
     }, [uploadedFilesSelectedData]);
 
-    const handleUpload = () => {
-        console.log('upload')
-    }
+    const handleUpdate = async () => {
+        setIsLoading(true);
+        const data = {
+            Name: uploadedFilesSelectedData?.Name,
+            payload: finalData,
+        };
+        try {
+            console.log('/protected/' + process + '/updateFileContent/' + uploadedFilesSelectedData?.f_id)
+            const result = await window.engine.Proxy('/protected/' + process + '/updateFileContent/' + uploadedFilesSelectedData?.f_id, 'patch', data);
+            //   "/protected/" + process + "/updateFileContent/" + id
+            console.log(result);
+            if (result?.data?.status === "updated") {
+                Swal.fire({
+                    title: "Updated!",
+                    text: "Your file has been updated.",
+                    icon: "success",
+                });
+                // setReload(prev => !prev);
+                setUploadedFilesSelectedData([])
+                setIsUploadButtonVisible(false);
+            } else {
+                Swal.fire({
+                    title: "Failed!",
+                    text: result?.data?.message || "Unknown error occurred.",
+                    icon: "error",
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: "Failed!",
+                text: error?.message,
+                icon: "error",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleChange = (rowIndex, key, value) => {
         const temp = [...finalData];
@@ -227,7 +261,7 @@ const UploadedFileDataOfEPIssuance = ({
                         size="small"
                         color="success"
                         variant="contained"
-                        onClick={handleUpload}
+                        onClick={handleUpdate}
                         disabled={
                             !isUploadButtonVisible ||
                             isLoading ||

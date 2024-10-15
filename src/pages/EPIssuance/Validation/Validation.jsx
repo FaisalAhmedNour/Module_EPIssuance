@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
     TextField,
     Button,
@@ -15,6 +15,7 @@ import MessageTable from "./MessegeTable";
 import ExtractedDataTableForEPIssuanceValidation from "./ExtractedDataTableForEPIssuanceValidation";
 import UploadedFileListOfEPIssuance from "./UploadedFileListOfEPIssuance";
 import UploadedFileDataOfEPIssuance from "./UploadedFileDataOfEPIssuance";
+import { EPDataContext } from "../../../providers/EPDataProvider";
 
 const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -31,11 +32,17 @@ const VisuallyHiddenInput = styled("input")({
 export const process = '65abb3734e635ea816139716';
 
 const Validation = () => {
+    const {
+        fileName,
+        setFileName,
+        remarks,
+        setRemarks,
+        prefix,
+        setPrefix
+    } = useContext(EPDataContext);
     const [reload, setReload] = useState(false);
     // const [isUploadButtonVisible, setIsUploadButtonVisible] = useState(false);
     const [isStartVisible, setIsStartVisible] = useState(false);
-    const [prefix, setPrefix] = useState(null);
-    const [remarks, setRemarks] = useState(null);
     const [uploadedFilesSelectedData, setUploadedFilesSelectedData] = useState({});
     const [uploadedExcelData, setUploadedExcelData] = useState([]);
     const [fileError, setFileError] = useState(false);
@@ -120,14 +127,15 @@ const Validation = () => {
                 "NW": row?.[netWeight]
             }
         })
-        setUploadedExcelData(extractedFile)
+        setUploadedExcelData(extractedFile);
         setIsLoading(false);
     }
 
     const handleFileUpload = async (event) => {
         setIsLoading(true)
         const file = event.target.files[0];
-
+        setFileName(file?.name);
+        // console.log("file", file);
         if (file) {
             const reader = new FileReader();
 
@@ -144,6 +152,7 @@ const Validation = () => {
                 // Iterate over rows in the worksheet and collect data
                 const rows = [];
                 worksheet.eachRow((row, rowNumber) => {
+                    // console.log(row.values)
                     const rowValues = row.values.slice(1); // Skip the first element (index 0 is null)
                     rows.push(rowValues);
                 });
@@ -161,6 +170,23 @@ const Validation = () => {
             reader.readAsArrayBuffer(file);
         }
     };
+
+    const getEngineOnSignal = () => {
+        window.engine.onProcessStart(function (message) {
+            console.log("message stop", message);
+        });
+    }
+
+    const getEngineOffSignal = () => {
+        window.engine.onProcessStop(function (message) {
+            console.log("message start", message);
+            setIsLoading(false);
+        });
+    }
+
+    useEffect(() => {
+        getEngineOffSignal()
+    }, []);
 
     return (
         <div className="relative mt-5">
@@ -194,6 +220,7 @@ const Validation = () => {
                                 }}
                                 inputProps={{ readOnly: true }}
                                 className="editableInput"
+                                value={fileName}
                             />
                             <Button
                                 accept=".xlsx"
@@ -305,9 +332,9 @@ const Validation = () => {
             <div className="flex gap-2">
                 <TimerSection
                     isDataToRun={true}
-                    dataToRunText={'EP To Issue'}
+                    dataToRunText={'Total'}
                     isSuccess={true}
-                    successText={"Issued"}
+                    successText={"Succeed"}
                     isFaild={true}
                     engineStatus={engineStatus}
                 />
@@ -316,8 +343,9 @@ const Validation = () => {
             <ExtractedDataTableForEPIssuanceValidation
                 setReload={setReload}
                 isReadyToUpload={isLoading}
+                uploadedExcelData={uploadedExcelData}
             />
-            <UploadedFileListOfEPIssuance
+            {/* <UploadedFileListOfEPIssuance
                 reload={reload}
                 setReload={setReload}
                 setUploadedFilesSelectedData={setUploadedFilesSelectedData}
@@ -325,10 +353,9 @@ const Validation = () => {
             {uploadedFilesSelectedData && (
                 <UploadedFileDataOfEPIssuance
                     uploadedFilesSelectedData={uploadedFilesSelectedData}
-                    reload={reload}
-                    setReload={setReload}
+                    setUploadedFilesSelectedData={setUploadedFilesSelectedData}
                 />
-            )}
+            )} */}
         </div>
     )
 }

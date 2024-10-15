@@ -1,8 +1,9 @@
 import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
-import { Box, IconButton, Modal, TableCell, TableRow, Typography } from '@mui/material';
+import { FormControl, IconButton, MenuItem, Modal, Select, TableCell, TableRow, Typography } from '@mui/material';
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
+import Box from "@mui/material/Box"
 
 const style2 = {
     position: 'absolute',
@@ -52,39 +53,81 @@ const ExtractedDataTableRowForEPIssuanceValidation = ({
                     (
                         <TableCell
                             sx={{
+                                paddingY: 0,
+                                paddingX: .5,
+                                height: '25px',
+                                minHeight: '25px',
+                                lineHeight: '25px',
                                 whiteSpace: "nowrap",
-                                backgroundColor: finalData[index].STATUS === 'n'
+                                backgroundColor: finalData?.STATUS === 'n'
                                     ? '' :
-                                    finalData[index].STATUS === 'e' ?
-                                        "#f0a6a6" : "yellow",
+                                    finalData?.STATUS === 'e' ?
+                                        "#f0a6a6" :
+                                        finalData?.STATUS === 'e' ? "yellow" : '',
                             }}
                             key={indx}
                             align="center"
                         >
-                            <p className={`p-0 flex gap-1 items-center`}>
-                                <input
-                                    type="text"
-                                    className={`h-full text-center py-1 px-1 w-full border rounded index text-[14px] ${index / 2 === 0 ? '#eeeeee' : "#bee2fd"}`}
-                                    value={
+                            <p className={`p-0 flex gap-1 items-center justify-center h-[20px]`}>
+                                {(header === 'SL NO' || header === 'MESSAGE') ?
+                                    <p className='text-center '>{
                                         (header === 'MESSAGE') ?
-                                            finalData[index][header].slice(0, 10) :
-                                            finalData[index][header]
-                                    }
-                                    onChange={(e) =>
-                                        handleChange(
-                                            index,
-                                            headers[indx],
-                                            e.target.value
-                                        )
-                                    }
-                                />
+                                            finalData?.[header]?.slice(0, 10) :
+                                            finalData?.[header]
+                                    }</p> :
+                                    (header === 'STATUS') ?
+                                        <FormControl fullWidth size="small">
+                                            <Select
+                                                value={finalData?.[header]}
+                                                sx={{
+                                                    height: 25,
+                                                    fontSize: 14,
+                                                    overflow: "hidden",
+                                                }}
+                                                onChange={(e) => handleChange(
+                                                    index,
+                                                    headers[indx],
+                                                    e.target.value
+                                                )}
+                                                className="editableInput"
+                                            >
+                                                <MenuItem
+                                                    sx={{ fontSize: 14, height: 25 }}
+                                                    value="e"
+                                                >
+                                                    Failed
+                                                </MenuItem>
+                                                <MenuItem
+                                                    sx={{ fontSize: 14, height: 25 }}
+                                                    value="w"
+                                                >
+                                                    Warning
+                                                </MenuItem>
+                                                <MenuItem
+                                                    sx={{ fontSize: 14, height: 25 }}
+                                                    value={'n'}
+                                                >
+                                                    Succeed
+                                                </MenuItem>
+                                            </Select>
+                                        </FormControl> :
+                                        < input
+                                            type="text"
+                                            className={`text-center py-1 px-1 w-full border rounded index text-[14px] h-[25px] ${index / 2 === 0 ? '#eeeeee' : "#bee2fd"}`}
+                                            value={finalData?.[header]}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    index,
+                                                    headers[indx],
+                                                    e.target.value
+                                                )
+                                            }
+                                        />}
                                 {
-                                    header === 'MESSAGE' && 
-                                    <RemoveRedEyeOutlinedIcon 
-                                    onClick={handleOpen5} 
-                                    sx={{
-                                        fontSize: 16,
-                                    }}
+                                    header === 'MESSAGE' &&
+                                    <RemoveRedEyeOutlinedIcon
+                                        onClick={handleOpen5}
+                                        sx={{ fontSize: 16 }}
                                     />
                                 }
                             </p>
@@ -94,14 +137,16 @@ const ExtractedDataTableRowForEPIssuanceValidation = ({
                 <TableCell
                     align="center"
                     sx={{
+                        paddingY: '0', height: '25px',
                         position: 'sticky',
                         right: 0,
                         zIndex: 20,
                         whiteSpace: "nowrap",
-                        backgroundColor: finalData[index].STATUS === 'n'
+                        backgroundColor: finalData?.STATUS === 'n'
                             ? "" :
-                            finalData[index].STATUS === 'e' ?
-                                "#f0a6a6" : "yellow",
+                            finalData?.STATUS === 'e' ?
+                                "#f0a6a6" :
+                                finalData?.STATUS === 'e' ? "yellow" : '',
                     }}
                 >
                     <IconButton
@@ -137,12 +182,8 @@ const ExtractedDataTableRowForEPIssuanceValidation = ({
                         >
                             Message
                         </Typography>
-                        {/* <Typography id="modal-modal-title" sx={{ fontSize: '18px', fontWeight: 500 }}>
-                            Note:
-                        </Typography> */}
                         <Typography id="modal-modal-description" sx={{ mt: 2, textAlign: 'justify' }}>
-                            {/* Though system have no records about invoice. UiCommercial offer you to download the standard format of Exp and fill up the required filed data by using copy paste process. Once you have download the format & filled up the data then you are ready for uploading the file in the UiCommercial portal. */}
-                            {finalData[index]["MESSAGE"]}
+                            {finalData?.["MESSAGE"]}
                         </Typography>
                     </div>
                 </Box>

@@ -7,22 +7,23 @@ import {
 } from '@tanstack/react-query'
 import { router } from './Routes/Router'
 // import AuthProvider from './pages/Providers/AuthProvider'
-import { createTheme, ThemeProvider } from '@mui/material/styles'
+// import { createTheme, ThemeProvider } from '@mui/material/styles'
 
 const queryClient = new QueryClient();
 
-const theme = createTheme({
-  status: {
-    primaryColor: '#0473EA',
-  },
-});
+// const theme = createTheme({
+//   status: {
+//     primaryColor: '#0473EA',
+//   },
+// });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   // <AuthProvider>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
+      {/* <ThemeProvider theme={theme}> */}
         <RouterProvider router={router} />
-      </ThemeProvider>
+        {/* <>aweifoaeur</> */}
+      {/* </ThemeProvider> */}
     </QueryClientProvider>
   // </AuthProvider>
 )
