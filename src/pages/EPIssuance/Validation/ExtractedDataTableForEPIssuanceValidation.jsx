@@ -113,6 +113,7 @@ const ExtractedDataTableForEPIssuanceValidation = ({
     };
 
     const handleClose = () => {
+        setUploadStatus('');
         setOpen(false)
     }
 
@@ -320,6 +321,7 @@ const ExtractedDataTableForEPIssuanceValidation = ({
                                     <TableCell
                                         key={index}
                                         sx={{
+                                            py: .5,
                                             color: 'white',
                                             backgroundColor: "#409cff",
                                             whiteSpace: "nowrap",
@@ -335,6 +337,7 @@ const ExtractedDataTableForEPIssuanceValidation = ({
                             )}
                             <TableCell
                                 sx={{
+                                    py: .5,
                                     color: 'white',
                                     backgroundColor: "#409cff",
                                     whiteSpace: "nowrap",
@@ -378,11 +381,6 @@ const ExtractedDataTableForEPIssuanceValidation = ({
                         color="success"
                         variant="contained"
                         onClick={handleUploadShow}
-                    // disabled={
-                    //     !isUploadButtonVisible ||
-                    //     isLoading ||
-                    //     isReadyToUpload
-                    // }
                     >
                         {isLoading ? "Uploading..." : "Upload"}
                     </Button>
@@ -411,11 +409,10 @@ const ExtractedDataTableForEPIssuanceValidation = ({
                                 color="success"
                                 variant="contained"
                                 onClick={handleUpload}
-                            // disabled={
-                            //     !isUploadButtonVisible ||
-                            //     isLoading ||
-                            //     isReadyToUpload
-                            // }
+                                disabled={
+                                    uploadStatus === "Uploaded" ||
+                                    dataToUpload?.length === 0
+                                }
                             >
                                 {isLoading ? "Uploading..." : "Upload"}
                             </Button>

@@ -65,10 +65,6 @@ const UploadedEPListRow = ({
                             return <TableCell
                                 sx={{
                                     paddingY: 0,
-                                    paddingX: .5,
-                                    height: '25px',
-                                    minHeight: '25px',
-                                    lineHeight: '25px',
                                     whiteSpace: "nowrap",
                                 }}
                                 key={indx}
@@ -84,7 +80,7 @@ const UploadedEPListRow = ({
                                             :
                                             < input
                                                 type="text"
-                                                className={`text-center py-1 px-1 w-full border rounded index text-[14px] h-[25px] ${index / 2 === 0 ? '#eeeeee' : "#bee2fd"}`}
+                                                className={`text-center py-1 px-1 w-full border border-[#b0aeae] rounded index text-[14px] h-[22px] ${index / 2 === 0 ? '#eeeeee' : "#bee2fd"}`}
                                                 value={finalData?.[header]}
                                                 onChange={(e) =>
                                                     handleChange(
@@ -103,20 +99,27 @@ const UploadedEPListRow = ({
                 <TableCell
                     align="center"
                     sx={{
-                        paddingY: '0', height: '25px',
+                        paddingY: 0, 
+                        // height: '25px',
                         position: 'sticky',
                         right: 0,
                         zIndex: 20,
                         whiteSpace: "nowrap",
                         bgcolor: index % 2 === 0 ? '#eeeeee' : '#bee2fd'
                     }}
+                    className='space-x-1'
                 >
                     <Checkbox
+                    // size='small'
+                    sx={{p: 0, m: 0}}
                         onClick={() => handleSelect(finalData?._id)}
                         checked={selectedDataToMakeBatch.includes(finalData?._id)}
                     />
                     <Tooltip title="Update">
                         <IconButton
+                        sx={{
+                            height: 25, width: 25
+                        }}
                             aria-label="update"
                             disabled={isUpdateDisabled}
                         // onClick={() => handleDelete(index)}
@@ -131,6 +134,9 @@ const UploadedEPListRow = ({
                     </Tooltip>
                     <Tooltip title="Delete">
                         <IconButton
+                        sx={{
+                            height: 25, width: 25
+                        }}
                             aria-label="delete"
                             onClick={() => handleDelete(index)}
                         >

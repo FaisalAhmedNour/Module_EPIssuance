@@ -54,10 +54,6 @@ const ExtractedDataTableRowForEPIssuanceValidation = ({
                         <TableCell
                             sx={{
                                 paddingY: 0,
-                                paddingX: .5,
-                                height: '25px',
-                                minHeight: '25px',
-                                lineHeight: '25px',
                                 whiteSpace: "nowrap",
                                 backgroundColor: finalData?.STATUS === 'n'
                                     ? '' :
@@ -80,9 +76,10 @@ const ExtractedDataTableRowForEPIssuanceValidation = ({
                                             <Select
                                                 value={finalData?.[header]}
                                                 sx={{
-                                                    height: 25,
+                                                    height: 22,
                                                     fontSize: 14,
                                                     overflow: "hidden",
+                                                    border: 0
                                                 }}
                                                 onChange={(e) => handleChange(
                                                     index,
@@ -113,7 +110,7 @@ const ExtractedDataTableRowForEPIssuanceValidation = ({
                                         </FormControl> :
                                         < input
                                             type="text"
-                                            className={`text-center py-1 px-1 w-full border rounded index text-[14px] h-[25px] ${index / 2 === 0 ? '#eeeeee' : "#bee2fd"}`}
+                                            className={`text-center py-1 px-1 w-full border border-[#b0aeae] rounded index text-[14px] h-[22px] ${index / 2 === 0 ? '#eeeeee' : "#bee2fd"} bg-100`}
                                             value={finalData?.[header]}
                                             onChange={(e) =>
                                                 handleChange(
@@ -127,7 +124,10 @@ const ExtractedDataTableRowForEPIssuanceValidation = ({
                                     header === 'MESSAGE' &&
                                     <RemoveRedEyeOutlinedIcon
                                         onClick={handleOpen5}
-                                        sx={{ fontSize: 16 }}
+                                        sx={{
+                                            fontSize: 18,
+                                            color: '#706e6e'
+                                        }}
                                     />
                                 }
                             </p>
@@ -137,21 +137,24 @@ const ExtractedDataTableRowForEPIssuanceValidation = ({
                 <TableCell
                     align="center"
                     sx={{
-                        paddingY: '0', height: '25px',
+                        paddingY: '0',
+                        height: 25,
                         position: 'sticky',
                         right: 0,
                         zIndex: 20,
                         whiteSpace: "nowrap",
                         backgroundColor: finalData?.STATUS === 'n'
-                            ? "" :
+                            ? (index % 2 === 0 ? "#eeeeee" : "#bee2fd") :
                             finalData?.STATUS === 'e' ?
                                 "#f0a6a6" :
-                                finalData?.STATUS === 'e' ? "yellow" : '',
+                                finalData?.STATUS === 'e' ? "yellow" :
+                                    (index % 2 === 0 ? "#eeeeee" : "#bee2fd"),
                     }}
                 >
                     <IconButton
                         aria-label="delete"
                         onClick={() => handleDelete(index)}
+                        sx={{ height: 25, width: 25 }}
                     >
                         <DeleteIcon
                             style={{

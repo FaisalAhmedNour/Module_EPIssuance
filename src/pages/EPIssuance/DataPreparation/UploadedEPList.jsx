@@ -392,6 +392,7 @@ const UploadedEPList = () => {
                                             return <TableCell
                                                 key={index}
                                                 sx={{
+                                                    py: .5,
                                                     color: 'white',
                                                     backgroundColor: "#409cff",
                                                     whiteSpace: "nowrap",
@@ -408,6 +409,7 @@ const UploadedEPList = () => {
                                 )}
                                 <TableCell
                                     sx={{
+                                        py: .5,
                                         color: 'white',
                                         backgroundColor: "#409cff",
                                         whiteSpace: "nowrap",

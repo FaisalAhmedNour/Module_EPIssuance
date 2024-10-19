@@ -5,11 +5,13 @@ import MessageTable from "../Validation/MessegeTable";
 import UploadedBatchList from "./UploadedBatchList";
 import { styled } from '@mui/material/styles';
 import { process } from "../Validation/Validation";
-import { Box, Button, FormControl, MenuItem, Modal, Select, TextField } from "@mui/material";
+import { Box, Button, FormControl, MenuItem, Modal, Select, TextField, Typography } from "@mui/material";
 import { EPDataContext } from "../../../providers/EPDataProvider";
 import FormTitle from "../../../Components/FormTitle";
 import DriveFolderUploadOutlinedIcon from '@mui/icons-material/DriveFolderUploadOutlined';
 import ShowBatchDetails from "./ShowBatchDetails";
+import EPIssueResponseTable from "./EPIssueResponseTable";
+import ErrorText from "../../../Components/ErrorText";
 
 const style = {
     position: 'absolute',
@@ -63,13 +65,15 @@ const EPIssue = () => {
         setCSpath,
         OTpath,
         setOTpath,
+        INpath,
+        setINpath,
         isShowDetails
     } = useContext(EPDataContext);
     const [open, setOpen] = useState(false);
     const [engineStatus, setEngineStatus] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [formError, setFormError] = useState(null);
     const [isGettingData, setIsGettingData] = useState(false);
-
 
     const handleSetSleepTime = (value) => {
         const convertedValue = Number(value);
@@ -79,49 +83,67 @@ const EPIssue = () => {
 
     const handleGetFolderPath = async (value) => {
         setIsGettingData(true);
-        const filePath = await window.engine.openFile({ title: "Select Folder of PN/PL PDFs", accept: ['openDirectory'] });
-        // console.log(filePath, value)
+        const filePath = await window.engine.openFile({
+            title: "Select Folder",
+            accept: ['openDirectory']
+        });
+        // console.log(filePath, value);
         if (filePath?.success === true) {
             switch (value) {
                 case 'file_location':
-                    return setFileLocation(filePath?.path[0]);
+                    setFileLocation(filePath?.path[0]);
+                    return setIsGettingData(false);
                 case 'PNpath':
-                    return setPNpath(filePath?.path[0]);
+                    setPNpath(filePath?.path[0]);
+                    return setIsGettingData(false);
                 case 'EXpath':
-                    return setEXpath(filePath?.path[0]);
+                    setEXpath(filePath?.path[0]);
+                    return setIsGettingData(false);
                 case 'SCpath':
-                    return setSCpath(filePath?.path[0]);
+                    setSCpath(filePath?.path[0]);
+                    return setIsGettingData(false);
                 case 'UTpath':
-                    return setUTpath(filePath?.path[0]);
+                    setUTpath(filePath?.path[0]);
+                    return setIsGettingData(false);
                 case 'CSpath':
-                    return setCSpath(filePath?.path[0]);
+                    setCSpath(filePath?.path[0]);
+                    return setIsGettingData(false);
                 case 'OTpath':
-                    return setOTpath(filePath?.path[0]);
+                    setOTpath(filePath?.path[0]);
+                    return setIsGettingData(false);
+                case 'INpath':
+                    setINpath(filePath?.path[0]);
+                    return setIsGettingData(false);
                 default: return;
             }
         }
-        setIsGettingData(false);
     }
 
     const handleOpen = (id) => {
-        console.log(id);
         setIssuingId(id);
         setOpen(true);
     };
 
     const handleClose = () => {
         setOpen(false);
+        setFileLocation('');
+        setPNpath('');
+        setEXpath('');
+        setSCpath('');
+        setUTpath('');
+        setCSpath('');
+        setOTpath('');
+        setINpath('');
     }
 
-    const handleStart = async (e) => {
-        e.preventDefault();
+    const handleStart = async (queries) => {
         setIsIssuing(true);
         const data = {
+            ...queries,
             pid: process,
-            // payload: uploadedExcelData,
             action: "SUB",
-            id: issuingId,
         };
+        console.log("data for issuing", data);
         const p = await window.engine.startProcess(data);
         console.log(p);
         if (p.success === true) {
@@ -145,14 +167,69 @@ const EPIssue = () => {
 
     const getEngineOffSignal = () => {
         window.engine.onProcessStop(function (message) {
-            console.log("message start", message);
+            console.log("message stop2", message);
+            setEngineStatus('Stopped');
             setIsLoading(false);
+            setIsIssuing(false);
+            setIssuingId(null);
         });
     }
 
+    const getEngineOnSignal = () => {
+        window.engine.onProcessStart(function (message) {
+            console.log("message start2", message);
+            setEngineStatus('Started');
+            handleClose();
+        });
+    }
+
+
+
     useEffect(() => {
-        getEngineOffSignal()
+        getEngineOffSignal();
+        getEngineOnSignal();
     }, []);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log('yes')
+        const queries = {};
+        queries.batchId = issuingId;
+        queries.isTestMode = isTestMode;
+        queries.Sleep = sleepTime;
+        if (isWithPrefix === true) {
+            queries.withPrefix = true;
+            fileLocation ?
+                queries.Root = fileLocation :
+                setFormError('Must select a file location!');
+        }
+        else {
+            queries.withPrefix = false;
+            INpath ?
+                queries.INpath = INpath :
+                setFormError('Must select a Commercial Invoice location!');
+            PNpath ?
+                queries.PNpath = PNpath :
+                setFormError('Must select a Packing list EXP form File Location!');
+            EXpath ?
+                queries.EXpath = EXpath :
+                setFormError('Must select a EXP form File Path!');
+            SCpath ?
+                queries.SCpath = SCpath :
+                setFormError('Must select a T.T, L/C, SC containing export LC number File Location!');
+            if (UTpath) {
+                queries.UTpath = UTpath;
+            }
+            if (CSpath) {
+                queries.CSpath = CSpath;
+            }
+            if (OTpath) {
+                queries.OTpath = OTpath;
+            }
+        }
+        // console.log("queries", queries);
+        handleStart(queries);
+    }
 
     return (
         <div className="relative mt-5">
@@ -173,6 +250,7 @@ const EPIssue = () => {
                 />
                 <MessageTable />
             </div>
+            <EPIssueResponseTable />
             <UploadedBatchList
                 handleOpen={handleOpen}
                 handleStop={handleStop}
@@ -186,7 +264,7 @@ const EPIssue = () => {
                 onClose={handleClose}
             >
                 <Box sx={style}>
-                    <form className="flex flex-col gap-y-2">
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-y-2">
                         <div className="flex justify-between items-center gap-1">
                             <FormTitle text={"Prefix"} isCompulsory={false} length={formLength} />
                             <FormControl fullWidth>
@@ -220,48 +298,98 @@ const EPIssue = () => {
                                 </Select>
                             </FormControl>
                         </div>
-                        <div className="flex justify-between items-center gap-1">
-                            <FormTitle text={"File location"} isCompulsory={true} length={formLength} />
-                            <div className="relative w-full">
-                                <TextField
-                                    sx={{
-                                        "& .MuiInputBase-root": {
-                                            paddingY: "1px",
-                                            paddingX: "4px",
-                                            fontSize: "14px",
-                                            height: 25,
-                                        },
-                                    }}
-                                    placeholder="Select folder"
-                                    fullWidth
-                                    type="text"
-                                    size="small"
-                                    name="file_location"
-                                    className="editableInput"
-                                    value={fileLocation}
-                                    onChange={(e) => setFileLocation(e.target.value)}
+                        {isWithPrefix &&
+                            <div className="flex justify-between items-center gap-1">
+                                <FormTitle text={"File location"} isCompulsory={true} length={formLength} />
+                                <div className="relative w-full">
+                                    <TextField
+                                        required
+                                        sx={{
+                                            "& .MuiInputBase-root": {
+                                                paddingY: "1px",
+                                                paddingX: "4px",
+                                                fontSize: "14px",
+                                                height: 25,
+                                            },
+                                        }}
+                                        placeholder="Select folder"
+                                        fullWidth
+                                        type="text"
+                                        size="small"
+                                        name="file_location"
+                                        className="editableInput"
+                                        value={fileLocation}
+                                        onChange={(e) => setFileLocation(e.target.value)}
+                                    />
+                                    <Button
+                                        sx={{
+                                            position: "absolute",
+                                            right: "1px",
+                                            height: "94%",
+                                            marginTop: "1px",
+                                            width: 10,
+                                            bgcolor: "white",
+                                            color: "#283e8a",
+                                            ":hover": {
+                                                color: "white",
+                                            },
+                                        }}
+                                        component="label"
+                                        variant="contained"
+                                        onClick={() => handleGetFolderPath('file_location')}
+                                    >
+                                        <DriveFolderUploadOutlinedIcon />
+                                    </Button>
+                                </div>
+                            </div>}
+                        {isWithPrefix ||
+                            <div className="flex justify-between items-center gap-1">
+                                <FormTitle
+                                    text={"Commercial Invoice"}
+                                    isCompulsory={true}
+                                    length={formLength}
                                 />
-                                <Button
-                                    sx={{
-                                        position: "absolute",
-                                        right: "1px",
-                                        height: "94%",
-                                        marginTop: "1px",
-                                        width: 10,
-                                        bgcolor: "white",
-                                        color: "#283e8a",
-                                        ":hover": {
-                                            color: "white",
-                                        },
-                                    }}
-                                    component="label"
-                                    variant="contained"
-                                    onClick={() => handleGetFolderPath('file_location')}
-                                >
-                                    <DriveFolderUploadOutlinedIcon />
-                                </Button>
-                            </div>
-                        </div>
+                                <div className="relative w-full">
+                                    <TextField
+                                        required
+                                        size="small"
+                                        name="PNpath"
+                                        variant="outlined"
+                                        value={INpath}
+                                        sx={{
+                                            width: "100%",
+                                            bgcolor: "#e8f0fe",
+                                            "& .MuiInputBase-root": {
+                                                height: 25,
+                                                fontSize: 14,
+                                            },
+                                            overflow: "hidden",
+                                        }}
+                                        // onChange={(e) => handleFormData("PNpath", e.target.value)}
+                                        inputProps={{ readOnly: true }}
+                                        placeholder="Select folder"
+                                    />
+                                    <Button
+                                        sx={{
+                                            position: "absolute",
+                                            right: "1px",
+                                            height: "94%",
+                                            marginTop: "1px",
+                                            width: 10,
+                                            bgcolor: "white",
+                                            color: "#283e8a",
+                                            ":hover": {
+                                                color: "white",
+                                            },
+                                        }}
+                                        component="label"
+                                        variant="contained"
+                                        onClick={() => handleGetFolderPath('INpath')}
+                                    >
+                                        <DriveFolderUploadOutlinedIcon />
+                                    </Button>
+                                </div>
+                            </div>}
                         {isWithPrefix ||
                             <div className="flex justify-between items-center gap-1">
                                 <FormTitle
@@ -271,6 +399,7 @@ const EPIssue = () => {
                                 />
                                 <div className="relative w-full">
                                     <TextField
+                                        required
                                         size="small"
                                         name="PNpath"
                                         variant="outlined"
@@ -318,6 +447,7 @@ const EPIssue = () => {
                                 />
                                 <div className="relative w-full">
                                     <TextField
+                                        required
                                         size="small"
                                         name="EXpath"
                                         variant="outlined"
@@ -364,6 +494,7 @@ const EPIssue = () => {
                                 />
                                 <div className="relative w-full">
                                     <TextField
+                                        required
                                         size="small"
                                         name="SCpath"
                                         variant="outlined"
@@ -405,7 +536,7 @@ const EPIssue = () => {
                             <div className="flex justify-between items-center gap-1">
                                 <FormTitle
                                     text={"Undertaking duly signed by authorized person File Location"}
-                                    isCompulsory={true}
+                                    isCompulsory={false}
                                     length={formLength}
                                 />
                                 <div className="relative w-full">
@@ -451,7 +582,7 @@ const EPIssue = () => {
                             <div className="flex justify-between items-center gap-1">
                                 <FormTitle
                                     text={"Consumption Statement File Location"}
-                                    isCompulsory={true}
+                                    isCompulsory={false}
                                     length={formLength}
                                 />
                                 <div className="relative w-full">
@@ -497,7 +628,7 @@ const EPIssue = () => {
                             <div className="flex justify-between items-center gap-1">
                                 <FormTitle
                                     text={"Others File Location"}
-                                    isCompulsory={true}
+                                    isCompulsory={false}
                                     length={formLength}
                                 />
                                 <div className="relative w-full">
@@ -592,6 +723,18 @@ const EPIssue = () => {
                                 </Select>
                             </FormControl>
                         </div>
+                        {formError &&
+                            <Typography
+                                sx={{
+                                    fontSize: 10,
+                                    fontWeight: 400,
+                                    color: 'red',
+                                    textAlign: 'center'
+                                }}
+                            >
+                                {formError}
+                            </Typography>
+                        }
                         <div className="mt-3 flex justify-center gap-2">
                             <Button
                                 sx={{
@@ -600,19 +743,16 @@ const EPIssue = () => {
                                 size="small"
                                 color="success"
                                 variant="contained"
-                                onClick={handleStart}
+                                type="submit"
+                                // onClick={handleStart}
                                 disabled={
                                     isGettingData ||
                                     isIssuing ||
-                                    (isWithPrefix
-                                        ? fileLocation === ""
-                                        : (fileLocation === "" ||
-                                            PNpath === "" ||
-                                            OTpath === "" ||
-                                            CSpath === "" ||
-                                            UTpath === "" ||
-                                            SCpath === "" ||
-                                            EXpath === ""))
+                                    (isWithPrefix && fileLocation === "") ||
+                                    (!isWithPrefix && (INpath === "" ||
+                                        PNpath === "" ||
+                                        SCpath === "" ||
+                                        EXpath === ""))
                                 }
                             >
                                 Submit
@@ -632,7 +772,7 @@ const EPIssue = () => {
                     </form>
                 </Box>
             </Modal>
-        </div>
+        </div >
     )
 }
 

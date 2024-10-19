@@ -11,9 +11,11 @@ import {
     Typography,
     TablePagination,
     Tooltip,
+    CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import Swal from "sweetalert2";
 import { useState, useEffect, useContext } from "react";
 import Loader from "../../../Components/Loader";
@@ -26,7 +28,14 @@ const UploadedBatchList = ({
     handleOpen,
     handleStop
 }) => {
-    const { isIssuing, issuingId, handleGetBatchDetails } = useContext(EPDataContext);
+    const {
+        isIssuing,
+        issuingId,
+        handleGetBatchDetails,
+        IdOfBatchToShow,
+        handleClearBatchToShow,
+        loadingForShowing
+    } = useContext(EPDataContext);
     const [batches, setBatches] = useState([]);
     const [error, setError] = useState(null);
     const [pageNoOfBatch, setPageNoOfBatch] = useState(0);
@@ -34,6 +43,7 @@ const UploadedBatchList = ({
     const [totalRowsOfBatch, setTotalRowsOfBatch] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [queryOfBatch, setQueryOfBatch] = useState({ page: 0, perPage: 10 });
+    const [updateBatchList, setUpdateBatchList] = useState(false);
 
     const handleChangePage = (event, newPage) => {
         setPageNoOfBatch(newPage);
@@ -70,14 +80,15 @@ const UploadedBatchList = ({
 
     useEffect(() => {
         handleGetBatchFiles();
-    }, [queryOfBatch]);
+    }, [queryOfBatch, updateBatchList]);
 
     const handleDelete = async (id) => {
-        console.log({ ids: [id] })
+        const payload = { ids: [id] };
         try {
-            const result = await window.engine.Proxy("/process/EP/batch/", 'delete', { ids: [id] });
-            console.log("result", result);
+            const result = await window.engine.Proxy("/process/EP/batch", 'delete', payload);
+            // console.log("result", result);
             if (result?.status >= 200 && result?.status < 400) {
+                setUpdateBatchList(prev => !prev);
                 Swal.fire({
                     icon: "success",
                     title: 'Deleted',
@@ -203,7 +214,6 @@ const UploadedBatchList = ({
                     Error: {error}
                 </Typography>
             ) : (
-                // <p className="text-center text-[red] text-sm"></p>
                 <div>
                     <TablePagination
                         sx={{ backgroundColor: "#e4e4e4" }}
@@ -230,6 +240,7 @@ const UploadedBatchList = ({
                                             whiteSpace: "nowrap",
                                             fontSize: 14,
                                         }}
+                                        align="center"
                                     >
                                         SL No
                                     </TableCell>
@@ -314,16 +325,19 @@ const UploadedBatchList = ({
                                             >
                                                 <TableCell
                                                     sx={{
+                                                        paddingY: 0,
                                                         whiteSpace: "nowrap",
                                                         fontSize: 14,
                                                     }}
                                                     component="th"
                                                     scope="row"
+                                                    align="center"
                                                 >
                                                     {row?.bId}
                                                 </TableCell>
                                                 <TableCell
                                                     sx={{
+                                                        paddingY: 0,
                                                         whiteSpace: "nowrap",
                                                         fontSize: 14,
                                                     }}
@@ -333,6 +347,7 @@ const UploadedBatchList = ({
                                                 </TableCell>
                                                 <TableCell
                                                     sx={{
+                                                        paddingY: 0,
                                                         whiteSpace: "nowrap",
                                                         fontSize: 14,
                                                     }}
@@ -342,6 +357,7 @@ const UploadedBatchList = ({
                                                 </TableCell>
                                                 <TableCell
                                                     sx={{
+                                                        paddingY: 0,
                                                         whiteSpace: "nowrap",
                                                         fontSize: 14,
                                                     }}
@@ -351,69 +367,71 @@ const UploadedBatchList = ({
                                                 </TableCell>
                                                 <TableCell
                                                     sx={{
-                                                        whiteSpace: "nowrap",
-                                                        fontSize: 14,
-                                                        display: 'flex',
-                                                        gap: 1,
-                                                        justifyContent: 'center',
+                                                        paddingY: 0,
                                                     }}
                                                     align="center"
                                                 >
-                                                    {(isIssuing && issuingId === row?._id) ?
-                                                        <>
+                                                    <div className="flex justify-center gap-1 items-center">
+                                                        {(isIssuing && issuingId === row?._id) ?
+                                                            <>
+                                                                <Button
+                                                                    size="small"
+                                                                    variant="contained"
+                                                                    sx={{ padding: 0, height: 20, fontSize: 12 }}
+                                                                    disabled
+                                                                // onClick={() => row?.S === "Saved" && handleOpen(row?._id)}
+                                                                >
+                                                                    Issuing
+                                                                </Button>
+                                                                <Button
+                                                                    color="error"
+                                                                    size="small"
+                                                                    variant="contained"
+                                                                    sx={{ padding: 0, height: 20, fontSize: 12 }}
+                                                                    onClick={() => handleStop(row?._id)}
+                                                                >
+                                                                    Stop
+                                                                </Button>
+                                                            </> :
                                                             <Button
+                                                                color="success"
                                                                 size="small"
                                                                 variant="contained"
-                                                                sx={{ padding: 0 }}
-                                                                disabled
-                                                            // onClick={() => row?.S === "Saved" && handleOpen(row?._id)}
+                                                                sx={{ padding: 0, height: 20, fontSize: 12 }}
+                                                                disabled={row?.S !== "Saved" || isIssuing}
+                                                                onClick={() => row?.S === "Saved" && handleOpen(row?._id)}
                                                             >
-                                                                Issuing
-                                                            </Button>
-                                                            <Button
-                                                                color="error"
-                                                                size="small"
-                                                                variant="contained"
-                                                                sx={{ padding: 0 }}
-                                                                onClick={() => handleStop(row?._id)}
-                                                            >
-                                                                Stop
-                                                            </Button>
-                                                        </> :
-                                                        <Button
-                                                            color="success"
-                                                            size="small"
-                                                            variant="contained"
-                                                            sx={{ padding: 0 }}
-                                                            disabled={row?.S !== "Saved" || isIssuing}
-                                                            onClick={() => row?.S === "Saved" && handleOpen(row?._id)}
-                                                        >
-                                                            {row?.S === "Saved" ? (
-                                                                <span>Issue</span>
-                                                            ) : (
-                                                                <span>Issued</span>
-                                                            )}
-                                                        </Button>}
+                                                                {row?.S === "Saved" ? (
+                                                                    <span>Issue</span>
+                                                                ) : (
+                                                                    <span>Issued</span>
+                                                                )}
+                                                            </Button>}
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell
                                                     sx={{
+                                                        paddingY: 0,
                                                         whiteSpace: "nowrap",
                                                         fontSize: 14,
                                                     }}
                                                     align="center"
                                                 >
                                                     <div className="flex justify-center gap-2">
-                                                        <Tooltip title="show">
+                                                        <Tooltip title={row?._id === IdOfBatchToShow ? "Hide" : "show"}>
                                                             <IconButton
                                                                 color="primary"
-                                                                sx={{ padding: 0, height: 25 }}
+                                                                sx={{ padding: 0, height: 25, width: 20 }}
                                                                 disabled={isIssuing}
                                                                 aria-label="edit"
-                                                                onClick={() =>
-                                                                    handleGetBatchDetails(row?._id)
-                                                                }
+                                                                onClick={() => row?._id === IdOfBatchToShow ?
+                                                                    handleClearBatchToShow() :
+                                                                    handleGetBatchDetails(0, 10, row?._id)}
                                                             >
-                                                                <RemoveRedEyeOutlinedIcon />
+                                                                {row?._id === IdOfBatchToShow ?
+                                                                    (loadingForShowing ?
+                                                                        <CircularProgress size={16} thickness={6} /> : <VisibilityOffOutlinedIcon />) :
+                                                                    <RemoveRedEyeOutlinedIcon />}
                                                             </IconButton>
                                                         </Tooltip>
                                                         <Tooltip title="delete">

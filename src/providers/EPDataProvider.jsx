@@ -27,16 +27,17 @@ const EPDataProvider = ({ children }) => {
   // EP Issue
   const [isIssuing, setIsIssuing] = useState(false);
   const [issuingId, setIssuingId] = useState(null);
-  const [isWithPrefix, setIsWithPrefix,] = useState(true);
-  const [fileLocation, setFileLocation,] = useState('');
-  const [sleepTime, setSleepTime,] = useState(0);
-  const [isTestMode, setIsTestMode,] = useState(true);
-  const [PNpath, setPNpath,] = useState('');
-  const [EXpath, setEXpath,] = useState('');
-  const [SCpath, setSCpath,] = useState('');
-  const [UTpath, setUTpath,] = useState('');
-  const [CSpath, setCSpath,] = useState('');
-  const [OTpath, setOTpath,] = useState('');
+  const [isWithPrefix, setIsWithPrefix] = useState(true);
+  const [fileLocation, setFileLocation] = useState('');
+  const [sleepTime, setSleepTime] = useState(0);
+  const [isTestMode, setIsTestMode] = useState(true);
+  const [PNpath, setPNpath] = useState('');
+  const [EXpath, setEXpath] = useState('');
+  const [SCpath, setSCpath] = useState('');
+  const [UTpath, setUTpath] = useState('');
+  const [CSpath, setCSpath] = useState('');
+  const [OTpath, setOTpath] = useState('');
+  const [INpath, setINpath] = useState('');
 
   // for all
   const [currentDate, setCurrentDate] = useState(() => {
@@ -73,17 +74,28 @@ const EPDataProvider = ({ children }) => {
     };
   });
 
-  const [isShowDetails, setIsShowDetails] = useState();
-  const [batchDetails, setBatchDetails] = useState([])
+  // show batch details
+  const [isShowDetails, setIsShowDetails] = useState(false);
+  const [batchDetails, setBatchDetails] = useState([]);
+  const [IdOfBatchToShow, setIdOfBatchToShow] = useState('');
+  const [loadingForShowing, setLoadingForShowing] = useState(false);
 
-  const handleGetBatchDetails = async (id) => {
-    console.log(id);
+  const handleGetBatchDetails = async (page, perPage, id = IdOfBatchToShow) => {
+    // console.log("-----------", page, perPage, id);
+    const data = {
+      page,
+      perPage,
+      id
+    }
+    const urlQueries = new URLSearchParams(data).toString();
     try {
-      const result = await window.engine.Proxy("/process/EP/batch?id=" + id, 'get');
-      console.log("result", result);
+      setLoadingForShowing(true);
+      const result = await window.engine.Proxy("/process/EP/batch?" + urlQueries, 'get');
+      // console.log("result", result);
       if (result?.status >= 200 && result?.status < 400) {
-        console.log(result);
-        setBatchDetails(result?.data?.items);
+        // console.log("result details: ", result);
+        setIdOfBatchToShow(id);
+        setBatchDetails(result?.data);
         setIsShowDetails(true);
       } else {
         Swal.fire({
@@ -100,6 +112,15 @@ const EPDataProvider = ({ children }) => {
         text: 'Failed to get Ep of this batch. Try again later..'
       })
     }
+    finally{
+      setLoadingForShowing(false);
+    }
+  }
+
+  const handleClearBatchToShow = () => {
+    setIdOfBatchToShow(null);
+    setBatchDetails([]);
+    setIsShowDetails(false);
   }
 
   const values = {
@@ -164,13 +185,19 @@ const EPDataProvider = ({ children }) => {
     setCSpath,
     OTpath,
     setOTpath,
+    INpath, 
+    setINpath,
 
     // others
     currentDate,
 
+    // show batch details
     handleGetBatchDetails,
     batchDetails,
-    isShowDetails
+    isShowDetails,
+    IdOfBatchToShow,
+    handleClearBatchToShow,
+    loadingForShowing
   }
 
   return (

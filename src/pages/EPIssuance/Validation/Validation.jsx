@@ -179,7 +179,7 @@ const Validation = () => {
 
     const getEngineOffSignal = () => {
         window.engine.onProcessStop(function (message) {
-            console.log("message start", message);
+            console.log("message stop", message);
             setIsLoading(false);
         });
     }

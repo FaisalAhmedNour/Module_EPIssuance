@@ -21,8 +21,10 @@ const ShowBatchDetails = () => {
     };
 
     useEffect(() => {
-        const convertedData = batchDetails.map(row => HalfToFull(row));
+        // console.log(batchDetails?.data?.bD)
+        const convertedData = batchDetails?.data?.bD?.map(row => HalfToFull(row?.D));
         setDataToShow(convertedData);
+        // console.log("convertedData", convertedData);
     }, [batchDetails])
 
     return (
@@ -78,21 +80,6 @@ const ShowBatchDetails = () => {
                                     }
                                 }
                             )}
-                            {/* <TableCell
-                                sx={{
-                                    color: 'white',
-                                    backgroundColor: "#409cff",
-                                    whiteSpace: "nowrap",
-                                    textAlign: "center",
-                                    borderLeft: 1,
-                                    borderColor: "white",
-                                    fontSize: 14,
-                                    position: 'sticky',
-                                    right: 0
-                                }}
-                            >
-                                Action
-                            </TableCell> */}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -126,17 +113,18 @@ const ShowBatchDetails = () => {
                                                     align="center"
                                                 >
                                                     <p className={`p-0 flex gap-1 items-center justify-center h-[20px]`}>
-                                                        {(header === 'SL NO') ?
+                                                        {dataRow?.[header]}
+                                                        {/* {(header === 'SL NO') ?
                                                             <p className='text-center '>{
-                                                                finalData?.[header]
+                                                                dataRow?.[header]
                                                             }</p> :
                                                             (header === 'STATUS') ?
-                                                                <p>{finalData?.[header]}</p>
+                                                                <p>{dataRow?.[header]}</p>
                                                                 :
                                                                 < input
                                                                     type="text"
                                                                     className={`text-center py-1 px-1 w-full border rounded index text-[14px] h-[25px] ${index / 2 === 0 ? '#eeeeee' : "#bee2fd"}`}
-                                                                    value={finalData?.[header]}
+                                                                    value={dataRow?.[header]}
                                                                     onChange={(e) =>
                                                                         handleChange(
                                                                             index,
@@ -144,56 +132,12 @@ const ShowBatchDetails = () => {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                />}
+                                                                />} */}
                                                     </p>
                                                 </TableCell>
                                             }
                                         }
-
                                     )}
-                                    {/* <TableCell
-                                        align="center"
-                                        sx={{
-                                            paddingY: '0', height: '25px',
-                                            position: 'sticky',
-                                            right: 0,
-                                            zIndex: 20,
-                                            whiteSpace: "nowrap",
-                                            bgcolor: index % 2 === 0 ? '#eeeeee' : '#bee2fd'
-                                        }}
-                                    >
-                                        <Checkbox
-                                            onClick={() => handleSelect(finalData?._id)}
-                                            checked={selectedDataToMakeBatch.includes(finalData?._id)}
-                                        />
-                                        <Tooltip title="Update">
-                                            <IconButton
-                                                aria-label="update"
-                                                disabled={isUpdateDisabled}
-                                            // onClick={() => handleDelete(index)}
-                                            >
-                                                <PublishedWithChangesIcon
-                                                    style={{
-                                                        color: isUpdateDisabled ? "" : "green",
-                                                        padding: 0,
-                                                    }}
-                                                />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Delete">
-                                            <IconButton
-                                                aria-label="delete"
-                                                onClick={() => handleDelete(index)}
-                                            >
-                                                <DeleteIcon
-                                                    style={{
-                                                        color: "#f64040",
-                                                        padding: 0,
-                                                    }}
-                                                />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </TableCell> */}
                                 </TableRow>
                             ))}
                     </TableBody>
